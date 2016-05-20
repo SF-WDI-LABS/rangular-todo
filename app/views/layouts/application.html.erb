@@ -3,11 +3,17 @@
 <head>
   <%= csrf_meta_tags %>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <base href="/">
-	
-	<%= stylesheet_link_tag :application, media: :all %>
-  <%= javascript_include_tag :application %>
   
+	<%= stylesheet_link_tag :application, media: :all %>
+
+  <!-- angular -->
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.8/angular.min.js"></script>
+
+  <!-- ngRoute -->
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-route.min.js"></script>
+
+  <%= javascript_include_tag :application %>
+
   <title>RailsAngularTodo</title>
 </head>
 <body>

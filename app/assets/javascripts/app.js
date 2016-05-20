@@ -1,11 +1,14 @@
-var app = angular.module('todoApp', ['ngRoute', 'ngResource', 'templates']);
+angular.module('todoApp', ['ngRoute', 'templates'])
+			 .config(config)
+	 		 .controller('TodosIndexController', TodosIndexController);
 
-app.config(['$routeProvider', '$locationProvider',
-	function ($routeProvider, $locationProvider) {
+config.$inject = ['$routeProvider', '$locationProvider'];
+function config($routeProvider, $locationProvider) {
 	  $routeProvider
 	    .when('/', {
 	      templateUrl: 'todos/index.html',
-	      controller: 'TodosIndexCtrl'
+	      controller: 'TodosIndexController',
+				controllerAs: 'todosIndexCtrl'
 	    })
 	    .otherwise({
 	      redirectTo: '/'
@@ -16,45 +19,72 @@ app.config(['$routeProvider', '$locationProvider',
 	    requireBase: false
 	  });
 	}
-]);
 
-app.factory('Todo', ['$resource', function ($resource) {
-  return $resource('/api/todos/:id', { id: '@id' },
-    {
-      'update': { method:'PUT' }
-    });
-  
-    // $resource function exposes all five RESTful methods/routes
-    // { 'get'   : { method: 'GET'                },
-    //   'save'  : { method: 'POST'               },
-    //   'query' : { method: 'GET', isArray: true },
-    //   'remove': { method: 'DELETE'             },
-    //   'delete': { method: 'DELETE'             } };
-}]);
+TodosIndexController.$inject = ['$http'];
+function TodosIndexController($http) {
+	var vm = this;
 
-app.controller('TodosIndexCtrl', ['$scope', 'Todo', function ($scope, Todo) {
-  $scope.todos = Todo.query();
-  $scope.todo = {};
-  
-  $scope.createTodo = function() {
-    var newTodo = Todo.save($scope.todo);
-    $scope.todo = {};
-    $scope.todos.unshift(newTodo);
-  };
+  $http({
+    method: 'GET',
+    url: '/api/todos'
+  }).then(onTodosIndexSuccess, onTodosIndexError)
 
-  $scope.markDone = function(todo) {
+  function onTodosIndexSuccess(response){
+    console.log('here\'s the get all todos response data', response.data);
+    vm.todos = response.data;
+  }
+  function onTodosIndexError(error){
+    console.log('there was an error: ', error);
+  }
+
+	vm.createTodo = function() {
+		$http({
+	    method: 'POST',
+	    url: '/api/todos',
+			data: vm.todo
+	  }).then(onTodosPostSuccess, onTodosPostError)
+
+	  function onTodosPostSuccess(response){
+	    console.log('here\'s the post todo response data', response.data);
+	    vm.todos.unshift(response.data);
+	  }
+	  function onTodosPostError(error){
+	    console.log('there was an error: ', error);
+	  }
+	}
+
+	vm.updateTodo = function(todo) {
+		$http({
+	    method: 'PUT',
+	    url: '/api/todos/'+todo.id,
+			data: todo
+	  }).then(onTodosUpdateSuccess, onTodosUpdateError)
+
+	  function onTodosUpdateSuccess(response){
+	    console.log('here\'s the put todo response data', response.data);
+			todo.editForm = false;
+	  }
+	  function onTodosUpdateError(error){
+	    console.log('there was an error: ', error);
+	  }
+	}
+
+	vm.markDone = function(todo) {
     todo.done = (todo.done ? false : true);
-    Todo.update(todo);
-  };
+    vm.updateTodo(todo);
+  }
 
-  $scope.updateTodo = function(todo) {
-    Todo.update(todo);
-    todo.editForm = false;
-  };
+	vm.deleteTodo = function(todo) {
+		$http({
+	    method: 'DELETE',
+	    url: '/api/todos/'+todo.id
+	  }).then(onTodosDeleteSuccess, onTodosDeleteError)
 
-  $scope.deleteTodo = function(todo) {
-    Todo.remove({ id: todo.id });
-    var todoIndex = $scope.todos.indexOf(todo);
-    $scope.todos.splice(todoIndex, 1);
-  };
-}]);
+	  function onTodosDeleteSuccess(response){
+	    console.log('here\'s the delete todo response data', response.data);
+	  }
+	  function onTodosDeleteError(error){
+	    console.log('there was an error: ', error);
+	  }
+	}
+};

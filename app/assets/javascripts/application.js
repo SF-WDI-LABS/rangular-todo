@@ -13,9 +13,6 @@
 //= require jquery
 //= require jquery_ujs
 //= require bootstrap-sprockets
-//= require angular.min
-//= require angular-route.min
-//= require angular-resource.min
 //= require angular-rails-templates
 //= require_tree ../templates
 //= require app
